@@ -15,9 +15,7 @@ module.exports = function (gulp, plugins, options) {
     'svg',
     'videos',
     'static',
-    'twigPages',
-    
-      )
+    'twigPages')
 
   );
 
