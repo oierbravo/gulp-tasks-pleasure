@@ -73,6 +73,10 @@ var plugins = require('gulp-load-plugins')({
       svg : {
         source: 'src/assets/svg',
         destination: 'assets/svg'
+      },
+      favicon : {
+        source: 'src/assets/favicon',
+        destination: '/'
       }
     };
     let customPaths = require(path.join(process.cwd(), '/config.vendors.js'));
@@ -192,6 +196,30 @@ var plugins = require('gulp-load-plugins')({
             }
           },
         },
+        favicon: {
+          file: path.join(paths.favicon.source, '/favicon.png'),
+          destination: path.join(paths.baseDestination, paths.favicon.destination),
+          options: {
+            appName: "My App",
+            appShortName: "App",
+            appDescription: "This is my application",
+            developerName: "Hayden Bleasel",
+            developerURL: "http://haydenbleasel.com/",
+            background: "#020307",
+            path: "favicons/",
+            url: "http://haydenbleasel.com/",
+            display: "standalone",
+            orientation: "portrait",
+            scope: "/",
+            start_url: "/",
+            version: 1.0,
+            logging: false,
+            html: "index.html",
+            pipeHTML: true,
+            replace: true
+        }
+          },
+        }
     }
 
     //Asignamos las opciones custom.
