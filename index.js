@@ -28,7 +28,8 @@ var plugins = require('gulp-load-plugins')({
       'gulp-inject': 'inject',
       'gulp-front-matter':'frontmatter',
       'gulp-htmlmin':'htmlmin',
-      'gulp-postcss':'postcss'
+      'gulp-postcss':'postcss',
+      'gulp-copy': 'copy'
         }
     });
 
