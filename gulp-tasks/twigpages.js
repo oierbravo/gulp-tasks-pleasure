@@ -175,8 +175,6 @@
 
     });
       gulp.task('twigPages', gulp.parallel(
-         // 'twigPages:dev-guide',
-          
           'twigPages:pages',
           'twigPages:index'));
   };

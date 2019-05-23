@@ -10,6 +10,7 @@ module.exports = function (gulp, plugins, options) {
 
   gulp.task('serve', 
     gulp.series('build',
+    'twigPages:dev-guide',
     'browser-sync',
     'watch'
   ));
