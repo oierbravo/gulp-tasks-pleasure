@@ -166,6 +166,7 @@
             })
             //Save files.
             .pipe(plugins.inject(sources()))
+            .pipe(plugins.rename('index.html'))
             .pipe(gulp.dest(options.twigPages.destination));
         
     });
@@ -174,7 +175,12 @@
         .pipe(plugins.copy(options.twigPages.destination, {prefix:2}))
 
     });
+    gulp.task('twigPages:index:clean', function () {
+        return gulp.src([path.join(options.twigPages.destination , '/index/index.html')])
+        .pipe(plugins.clean())
+
+    });
       gulp.task('twigPages', gulp.parallel(
           'twigPages:pages',
-          'twigPages:index'));
+          'twigPages:index','twigPages:index:clean'));
   };

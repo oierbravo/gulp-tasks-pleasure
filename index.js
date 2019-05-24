@@ -29,7 +29,9 @@ var plugins = require('gulp-load-plugins')({
       'gulp-front-matter':'frontmatter',
       'gulp-htmlmin':'htmlmin',
       'gulp-postcss':'postcss',
-      'gulp-copy': 'copy'
+      'gulp-copy': 'copy',
+      'gulp-clean':'clean',
+      'gulp-rename': 'rename'
         }
     });
 
