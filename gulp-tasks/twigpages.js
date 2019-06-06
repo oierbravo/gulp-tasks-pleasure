@@ -125,49 +125,51 @@
             .pipe(gulp.dest(options.twigPages.componentsDestination));
       });
       gulp.task('twigPages:dev-guide', function () {
-        //Define empty variable for page list.
-        let pageList = [];
-        //Iterate over source files.
-        let pageListFiles =  glob.sync(options.twigPages.src);
-        pageListFiles.forEach(function(file){
-            //If index exits
-            if(path.parse(file)['name'] !== "index") {
-                return;
-            }
-            //Adding entry to the list.
-            pageList.push(path.basename(file,'.twig'));
-        });
-        let componentList = [];
-
-        let componentListFiles =  glob.sync(options.twigPages.componentsSrc);
-        componentListFiles.forEach(function(file){
-            //Adding entry to the list.
-           componentList.push(path.basename(file,'.twig'));
-        });
-        return gulp.src([path.join(options.twigPages.baseSrc,'dev-guide.twig')])
-            .pipe(plugins.data(function(file){
-                return {
-                    pageList:pageList,
-                    componentList:componentList
+        if(!options.production){
+            //Define empty variable for page list.
+            let pageList = [];
+            //Iterate over source files.
+            let pageListFiles =  glob.sync(options.twigPages.src);
+            pageListFiles.forEach(function(file){
+                //If index exits
+                if(path.parse(file)['name'] !== "index") {
+                    return;
                 }
-            }))
-            .pipe(plugins.twig({
-                base:path.join(options.twigPages.baseSrc),
-                functions:[
-                    {
-                        name: "svgSprite",
-                        func: funcSvgSprite
+                //Adding entry to the list.
+                pageList.push(path.basename(file,'.twig'));
+            });
+            let componentList = [];
+
+            let componentListFiles =  glob.sync(options.twigPages.componentsSrc);
+            componentListFiles.forEach(function(file){
+                //Adding entry to the list.
+            componentList.push(path.basename(file,'.twig'));
+            });
+            return gulp.src([path.join(options.twigPages.baseSrc,'dev-guide.twig')])
+                .pipe(plugins.data(function(file){
+                    return {
+                        pageList:pageList,
+                        componentList:componentList
                     }
-                ]
-            }))
-            .on('error', function (err) {
-                process.stderr.write(err.message + '\n');
-                this.emit('end');
-            })
-            //Save files.
-            .pipe(plugins.inject(sources()))
-            .pipe(plugins.rename('index.html'))
-            .pipe(gulp.dest(options.twigPages.destination));
+                }))
+                .pipe(plugins.twig({
+                    base:path.join(options.twigPages.baseSrc),
+                    functions:[
+                        {
+                            name: "svgSprite",
+                            func: funcSvgSprite
+                        }
+                    ]
+                }))
+                .on('error', function (err) {
+                    process.stderr.write(err.message + '\n');
+                    this.emit('end');
+                })
+                //Save files.
+                .pipe(plugins.inject(sources()))
+                .pipe(plugins.rename('index.html'))
+                .pipe(gulp.dest(options.twigPages.destination));
+            }
         
     });
     gulp.task('twigPages:index', function () {
@@ -180,7 +182,7 @@
         .pipe(plugins.clean())
 
     });
-      gulp.task('twigPages', gulp.parallel(
+      gulp.task('twigPages', gulp.series(
           'twigPages:pages',
           'twigPages:index','twigPages:index:clean'));
   };
