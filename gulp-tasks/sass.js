@@ -27,6 +27,7 @@ module.exports = function (gulp, plugins, options) {
       }))
       .pipe(plugins.sourcemaps.write())
       //.pipe(options.production ? plugins.cleanCSS({compatibility: 'ie8'}) : plugins.util.noop())
+      .pipe(plugins.flatten())
       .pipe(gulp.dest(options.sass.destination))
       .pipe(plugins.notify("Compilación CSS terminada"));
   });

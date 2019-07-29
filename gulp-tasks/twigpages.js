@@ -95,6 +95,7 @@
         .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/'}))
         .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors/*.js')], {read: false}), {starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
         .pipe(options.production ? plugins.htmlmin({ collapseWhitespace: true ,removeComments:true}) : plugins.util.noop())
+        .pipe(plugins.flatten({ includeParents: -1} ))
         .pipe(gulp.dest(options.twigPages.destination));
     });
     gulp.task('twigPages:components', function () {
