@@ -34,7 +34,8 @@ var plugins = require('gulp-load-plugins')({
       'gulp-postcss':'postcss',
       'gulp-copy': 'copy',
       'gulp-clean':'clean',
-      'gulp-rename': 'rename'
+      'gulp-rename': 'rename',
+      'gulp-inject-file': 'injectFile'
         }
     });
 
@@ -87,7 +88,7 @@ var plugins = require('gulp-load-plugins')({
 
     //Default options.
     var options = {
-        baseDestination: path.join(paths.baseDestination),
+        baseDestination: path.join('./',paths.baseDestination),
         // ----- Browsersync ----- //
         browserSync: {
           // Put your local site URL here to prevent Browsersync
@@ -139,7 +140,7 @@ var plugins = require('gulp-load-plugins')({
           compiledFiles: path.join(paths.scripts.destination, '**/*.js'),
           vendorFiles: paths.jsVendorFiles,
           destination: path.join(paths.baseDestination, paths.scripts.destination),
-          vendorDestination: path.join(paths.baseDestination, paths.scripts.destination,'vendors')
+          vendorDestination: path.join(paths.baseDestination, paths.scripts.destination)
         },
       
         // ----- eslint ----- //

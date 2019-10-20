@@ -31,8 +31,8 @@ md = new MarkdownIt();
       
     var sources = function() {
         return gulp.src([
-            path.join(options.baseDestination, '/assets/js/*.js'),
-            path.join(options.baseDestination, '/assets/css/*.css')]
+            path.join(options.baseDestination, '/assets/js/app.js'),
+            path.join(options.baseDestination, '/assets/css/styles.css')]
             , {read: false})
      
     }
@@ -119,8 +119,18 @@ md = new MarkdownIt();
             this.emit('end');
         })
         //Save files.
-        .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/'}))
-        .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors/*.js')], {read: false}), {starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
+        .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors.js')],{read: false}),{removeTags:true,starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
+
+        .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/',removeTags:true}))
+        .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/css/styles-critical.css' ) ]), {
+            starttag: '/* inject:styles-critical:{{ext}} */',
+            endtag: '/* endinject */',
+            removeTags:true,
+            transform: function (filePath, file) {
+              // return file contents as string
+              return file.contents.toString('utf8')
+            }
+          }))
         .pipe(options.production ? plugins.htmlmin({ collapseWhitespace: true ,removeComments:true}) : plugins.util.noop())
         .pipe(gulp.dest(options.twigPages.destination));
     });
