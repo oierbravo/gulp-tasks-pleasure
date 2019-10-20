@@ -1,30 +1,53 @@
+
 /**
  * @file
  * Task: Generate TWIG based pages.
  */
+let path = require('path');
+let fs = require('fs');
+let glob = require('glob');
+let _ = require('lodash');
+var twigMarkdown = require('twig-markdown');
+var twigFunctions = require('./libs/gulp-twig-funcs')
+
+var moment = require('moment');
+var MarkdownIt = require('markdown-it'),
+md = new MarkdownIt();
 
  module.exports = function (gulp, plugins, options) {
     'use strict';
-    let path = require('path');
-    let fs = require('fs');
-    let glob = require('glob');
-    let _ = require('lodash');
-
-    let funcSvgSprite = function(id){
-        return '<svg><use xlink:href="/assets/svg/sprite/sprite.svg#' + id + '"></use></svg>';
-    }
-    let funcActiveMenu = function(target,current){
-        if(target === current){
-            return 'active';
+    function processNetlifyContent(data,options){
+        if(data.date){
+            data.dateLong = moment(data.date).format('LL');
+            data.dateShort = moment(data.date).format('L');
         }
-        return '';
+        _.forEach(options.markdownFields,function(field){
+            if(data[field]){
+                data[field] = md.render(data[field]);
+            }
+        })
+        return data;
     }
+      
     var sources = function() {
         return gulp.src([
             path.join(options.baseDestination, '/assets/js/*.js'),
             path.join(options.baseDestination, '/assets/css/*.css')]
             , {read: false})
      
+    }
+    var twigConfigs = {
+        base:path.join(options.twigPages.baseSrc),
+            extend: function(Twig){
+                twigMarkdown(Twig);
+            },
+            functions: twigFunctions,
+            namespaces: {
+                'base': path.join(process.cwd(), options.twigPages.baseSrc),
+                'layouts': path.join(process.cwd(), options.twigPages.baseSrc , '/_layouts'),
+                'includes': path.join(process.cwd(), options.twigPages.baseSrc , '/_includes')
+            },
+            useFileContents: true
     }
  
       
@@ -41,6 +64,7 @@
         .pipe(plugins.data(function(file){
             return {
                 title:'Default Title',
+                description:'Default Description',
             }
         }))
         .pipe(plugins.data(function(file){
@@ -55,6 +79,17 @@
         }))
         //Getting json data.
         .pipe(plugins.data(function(file){
+            let name = path.basename(path.dirname(file.path));
+            let listPath = path.join('tmp/',name + '-list.json');
+            if(!fs.existsSync(listPath)){
+                return {};
+            }
+            let listData = JSON.parse(fs.readFileSync(listPath));
+            return {
+                items: listData
+            }
+        }))
+        .pipe(plugins.data(function(file){
 
             let name = path.basename(path.dirname(file.path));
             /*if(name == 'pages') {
@@ -64,29 +99,21 @@
             if(!fs.existsSync(contentPath)){
                 return {};
             }
-            return  require('yaml-reader').read(contentPath);
+            let data = require('yaml-reader').read(contentPath);
+
+            if(!data.titleSEO && !file.data.titleSEO){
+                data.titleSEO = data.title;
+            }
+            if(!data.descriptionSEO && !file.data.descriptionSEO){
+                data.descriptionSEO = data.description;
+            }
+            
+            return  data;
        
         }))
         
         //Render via Twig plugin
-        .pipe(plugins.twig({
-          
-            base:path.join(options.twigPages.baseSrc),
-            functions:[
-                {
-                    name: "svgSprite",
-                    func: funcSvgSprite
-                    
-                },
-                {
-                    name: "activeMenu",
-                    func: funcActiveMenu
-                    
-                }
-            ],
-          //  debug:true,
-           // useFileContents:true
-        }))
+        .pipe(plugins.twig(twigConfigs))
         .on('error', function (err) {
             process.stderr.write(err.message + '\n');
             this.emit('end');
@@ -95,86 +122,163 @@
         .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/'}))
         .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors/*.js')], {read: false}), {starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
         .pipe(options.production ? plugins.htmlmin({ collapseWhitespace: true ,removeComments:true}) : plugins.util.noop())
-        .pipe(plugins.flatten({ includeParents: -1} ))
         .pipe(gulp.dest(options.twigPages.destination));
     });
-    gulp.task('twigPages:components', function () {
-        return gulp.src([options.twigPages.componentsSrc])
-            .pipe(plugins.plumber({
-                handleError: function (err) {
-                    console.log(err);
-                    this.emit('end');
+      gulp.task('twigPages:dev-guide', function (cb) {
+        if(options.production){
+            return cb();
+        }
+        //Define empty variable for page list.
+        let pageList = [];
+        //Iterate over source files.
+        let pageListFiles =  glob.sync(options.twigPages.src);
+        pageListFiles.forEach(function(file){
+            //Adding entry to the list.
+            pageList.push(path.basename(path.dirname(file)));
+        });
+        return gulp.src([path.join(__dirname,'/gulp-tasks/libs/dev-guide.twig')],{allowEmpty:true})
+            .pipe(plugins.data(function(file){
+                return {
+                    pageList:pageList
                 }
             }))
-            .pipe(plugins.twig({
-              //  useFileContents:true,
-                base:path.join(options.twigPages.baseSrc),
-                functions:[
-                    {
-                        name: "svgSprite",
-                        func: function (args) {
-                            return '<svg><use xlink:href="/assets/svg/sprite/sprite.svg#' + args + '"></use></svg>';
-                        }
-                    }
-                ]
-            }))
+            .pipe(plugins.twig(twigConfigs))
             .on('error', function (err) {
                 process.stderr.write(err.message + '\n');
                 this.emit('end');
             })
             //Save files.
-            .pipe(gulp.dest(options.twigPages.componentsDestination));
-      });
-      gulp.task('twigPages:dev-guide', function () {
-        if(!options.production){
-            //Define empty variable for page list.
-            let pageList = [];
-            //Iterate over source files.
-            let pageListFiles =  glob.sync(options.twigPages.src);
-            pageListFiles.forEach(function(file){
-                //If index exits
-                if(path.parse(file)['name'] !== "index") {
-                    return;
-                }
-                //Adding entry to the list.
-                pageList.push(path.basename(file,'.twig'));
-            });
-            let componentList = [];
-
-            let componentListFiles =  glob.sync(options.twigPages.componentsSrc);
-            componentListFiles.forEach(function(file){
-                //Adding entry to the list.
-            componentList.push(path.basename(file,'.twig'));
-            });
-            return gulp.src([path.join(options.twigPages.baseSrc,'dev-guide.twig')])
-                .pipe(plugins.data(function(file){
-                    return {
-                        pageList:pageList,
-                        componentList:componentList
-                    }
-                }))
-                .pipe(plugins.twig({
-                    base:path.join(options.twigPages.baseSrc),
-                    functions:[
-                        {
-                            name: "svgSprite",
-                            func: funcSvgSprite
-                        }
-                    ]
-                }))
-                .on('error', function (err) {
-                    process.stderr.write(err.message + '\n');
-                    this.emit('end');
-                })
-                //Save files.
-                .pipe(plugins.inject(sources()))
-                .pipe(plugins.rename('index.html'))
-                .pipe(gulp.dest(options.twigPages.destination));
-            }
+            //.pipe(plugins.rename('index.html'))
+            .pipe(gulp.dest(options.twigPages.destination));
+            
         
     });
+    gulp.task('netlifycms:items', function(cb) {
+        let contentTypes = options.netlifycms.contentTypes;
+        
+        //console.log(contentTypes);
+        _.forEach(contentTypes, function(content){
+            
+            let currentContentSource = path.join(options.netlifycms.baseSource,content.name,'/*.json');
+            let currentContentDestination = path.join( options.netlifycms.baseDestination,content.name + '/');
+            if(!content.itemTemplateSrc){
+                return;
+            }
+            gulp.src(currentContentSource)
+                .pipe(plugins.data(function(file){
+                    let contentData = JSON.parse(file.contents.toString());
+                    file.data = processNetlifyContent(contentData,content);
+                    
+                    if(contentData.template){
+                        content.itemTemplateSrc = options.templateBaseSrc + contentData.template + '.twig';
+                    }
+
+                    if(!content.itemTemplateSrc){
+                        gulp.emit('error', new PluginError(TASK_NAME, 'templateSrc missing!'));
+                
+                    }
+
+                    
+
+                    let templatePath = path.join(process.cwd(),content.itemTemplateSrc);
+                    if(!fs.existsSync(templatePath)){
+                        gulp.emit('error', new PluginError(TASK_NAME, 'templateSrc "' + templatePath +'" not found!'));
+                    }
+                    file.contents = new Buffer.from(fs.readFileSync(templatePath));
+                }))
+                .pipe(plugins.data(function(file){
+                    let currentMenu = path.basename(path.dirname(file.path));
+                    
+                    if(currentMenu === 'pages') {
+                        currentMenu = 'index' 
+                    };
+                    let general = require('yaml-reader').read(path.join(options.twigPages.data,'site-info.yml'));
+                    let outputData = _.merge({currentMenu:currentMenu},general);
+                    return outputData;
+                }))
+                .pipe(plugins.twig(twigConfigs))
+                .pipe(plugins.rename(function (path) {
+                    path.dirname = path.basename;
+                    path.basename = 'index';
+                }))
+
+                .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/'}))
+                .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors/*.js')], {read: false}), {starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
+                .pipe(options.production ? plugins.htmlmin({ collapseWhitespace: true ,removeComments:true}) : plugins.util.noop())
+                .pipe(gulp.dest(currentContentDestination));
+        })
+
+           
+            
+
+            cb();
+      });
+      gulp.task('netlifycms:list', function(cb) {
+        let contentTypes = options.netlifycms.contentTypes;
+        
+        _.forEach(contentTypes, function(content){
+            if(!content.listTemplateSrc){
+                return;
+            }
+            let currentContentSource = path.join(options.netlifycms.baseSource,content.name,'/*.json');
+            return gulp.src(currentContentSource)
+            .pipe(plugins.data(function(file){
+                let dataContent = JSON.parse(file.contents.toString());
+                file.data = dataContent;
+                
+                if(dataContent.template){
+                    content.listTemplateSrc = options.templateBaseSrc + dataContent.template + '.twig';
+                }
+                if(fs.existsSync(content.listTemplateSrc)){
+                    file.contents = new Buffer.from(fs.readFileSync(content.listTemplateSrc));
+                }
+                
+            }))
+            .pipe(plugins.data(function(file){
+                let currentMenu = content.name
+                let general = require('yaml-reader').read(path.join(options.twigPages.data,'site-info.yml'));
+                let outputData = _.merge({currentMenu:currentMenu},general);
+                return outputData;
+            }))
+            .pipe(plugins.data(function(file){
+                let items = [];
+                let contentListFiles =  glob.sync(currentContentSource);
+                contentListFiles.forEach(function(file){
+                    //Adding entry to the list.
+                    var contentData = JSON.parse(fs.readFileSync(file));
+    
+                    contentData.slug = path.basename(file,'.json');
+                    items.push(processNetlifyContent(contentData,content));
+                });
+                return {items:items};
+            }))
+            .pipe(plugins.twig(twigConfigs))
+            .pipe(plugins.rename(function (path) {
+                path.dirname = content.name;
+                path.basename = 'index';
+              }))
+              .on('error', function (err) {
+                process.stderr.write(err.message + '\n');
+                this.emit('end');
+            })
+            //Save files.
+            .pipe(plugins.inject(sources(),{ignorePath:'/' + options.baseDestination + '/'}))
+            .pipe(plugins.inject(gulp.src([path.join(options.baseDestination, '/assets/js/vendors/*.js')], {read: false}), {starttag: '<!-- inject:vendors:{{ext}} -->',ignorePath:'/' + options.baseDestination + '/'}))
+            .pipe(options.production ? plugins.htmlmin({ collapseWhitespace: true ,removeComments:true}) : plugins.util.noop())
+            .pipe(gulp.dest(options.netlifycms.baseDestination));
+        })
+
+           
+            
+
+            cb();
+      });
+      gulp.task('netlifycms',gulp.parallel(
+          'netlifycms:items',
+          'netlifycms:list'
+          ));
     gulp.task('twigPages:index', function () {
-        return gulp.src([path.join(options.twigPages.destination , '/index/index.html')])
+        return gulp.src([path.join(options.twigPages.destination , '/index/index.html')],{allowEmpty:true})
         .pipe(plugins.copy(options.twigPages.destination, {prefix:2}))
 
     });
@@ -183,7 +287,11 @@
         .pipe(plugins.clean())
 
     });
-      gulp.task('twigPages', gulp.series(
-          'twigPages:pages',
-          'twigPages:index','twigPages:index:clean'));
+      gulp.task('twigPages', (options.production) ? 
+        gulp.series('netlifycms','twigPages:pages','twigPages:index','twigPages:index:clean') : 
+        gulp.series('twigPages:pages'
+        //,'twigPages:index'
+        ,'twigPages:dev-guide'
+        )
+        );
   };

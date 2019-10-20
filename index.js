@@ -1,5 +1,8 @@
 var path = require('path');
+var fs = require('fs');
+
 var util = require('gulp-util');
+var _ = require('lodash');
 
 module.exports = function (gulp) {
     'use strict';
@@ -191,19 +194,47 @@ var plugins = require('gulp-load-plugins')({
               dest: 'sprite', // destination folder
               prefix: '.svg--%s', // BEM-style prefix if styles rendered
               sprite: 'sprite.svg', //generated sprite name
-              example: !!util.env.production ? false : true// Build a sample page, please!
+              example: !!util.env.production ? false : {template: path.join(__dirname,'/gulp-tasks/libs/svg-sprite/svg-symbols.tmpl')}// Build a sample page, please!
             }
           },
         },
+        netlifycms: {
+          baseSource: path.join('content/'),
+          baseDestination: path.join(paths.baseDestination),
+          contentTypes: []
+        }
     }
 
+    if(fs.existsSync('./src/static/admin/config.yml')){
+      var netlifyCMSConfigData = require('yaml-reader').read('./src/static/admin/config.yml');
+      _.forEach(netlifyCMSConfigData.collections,function(content,index){
+        var contentType = {
+          name: content.name.toLowerCase(),
+          markdownFields:[]
+        }
+        content.fields.map(function(field){
+            if(field.widget === 'markdown'){
+              contentType.markdownFields.push(field.name);
+            }
+        });
+        var itemTwig = path.join(options.twigPages.baseSrc,contentType.name + '/item.twig');
+        if(fs.existsSync(itemTwig)){
+          contentType.itemTemplateSrc = itemTwig;
+        }
+        var listTwig = path.join(options.twigPages.baseSrc,contentType.name + '/list.twig');
+        if(fs.existsSync(listTwig)){
+          contentType.listTemplateSrc = listTwig;
+        }
+        options.netlifycms.contentTypes.push(contentType);
+      });
+    }
     //Asignamos las opciones custom.
     //Object.assign(options,customOptions );
 
     options.production = !!util.env.production;
     if(options.production){
       console.log('-=PRODUCTION MODE=-');
-      console.log(options.baseDestination);
+      console.log('DESTINATION:',options.baseDestination);
     }
     //Cargamos las task del gulp.
     require('./gulp-tasks/javascript')(gulp, plugins, options);
@@ -213,19 +244,7 @@ var plugins = require('gulp-load-plugins')({
     require('./gulp-tasks/images')(gulp, plugins, options);
     require('./gulp-tasks/videos')(gulp, plugins, options);
     require('./gulp-tasks/static')(gulp, plugins, options);
-    // require('./gulp-tasks/clean-css')(gulp, plugins, options);
-    // require('./gulp-tasks/clean-js')(gulp, plugins, options);
-    // require('./gulp-tasks/clean-styleguide')(gulp, plugins, options);
-    // require('./gulp-tasks/clean-twigpages')(gulp, plugins, options);
-     require('./gulp-tasks/clean')(gulp, plugins, options);
-    // require('./gulp-tasks/compile-sass')(gulp, plugins, options);
-    // require('./gulp-tasks/compile-js')(gulp, plugins, options);
-    // require('./gulp-tasks/compile-styleguide')(gulp, plugins, options);
-    // require('./gulp-tasks/jekyll')(gulp, plugins, options);
-    // require('./gulp-tasks/lint-js')(gulp, plugins, options);
-    // require('./gulp-tasks/lint-css')(gulp, plugins, options);
-    //require('./gulp-tasks/minify-css')(gulp, plugins, options);
-    //require('./gulp-tasks/minify-js')(gulp, plugins, options);
+    require('./gulp-tasks/clean')(gulp, plugins, options);
     require('./gulp-tasks/fonts')(gulp, plugins, options);
     require('./gulp-tasks/sass')(gulp, plugins, options);
     require('./gulp-tasks/build')(gulp, plugins, options);
