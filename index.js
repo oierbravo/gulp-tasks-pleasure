@@ -97,7 +97,7 @@ var plugins = require('gulp-load-plugins')({
           //logConnections: true
       
           server: {baseDir: [!!util.env.production ? 'build' : 'build-dev']},
-          startPath: "/",
+          startPath: "/pleasure.html",
           port: 3005,
           online: false,
       
@@ -210,6 +210,7 @@ var plugins = require('gulp-load-plugins')({
       _.forEach(netlifyCMSConfigData.collections,function(content,index){
         var contentType = {
           name: content.name.toLowerCase(),
+          label: content.label,
           markdownFields:[]
         }
         content.fields.map(function(field){

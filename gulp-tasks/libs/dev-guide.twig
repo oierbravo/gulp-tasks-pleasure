@@ -1,19 +1,37 @@
-{% extends "layouts::/page.twig" %}
-{% set title = "Guia de páginas y componentes" %}
-{% block page %}
-    <h3>Guia de páginas y componentes</h3>
-    <h4>Páginas</h4>
-    <ul>
-        {% for value in pageList %}
-            <li><a href="{{ value }}.html">{{ value }}</a></li>
-        {% endfor %}
-    </ul>
-    <h4>Componentes</h4>
-    <ul>
-        {% for value in componentList %}
-            <li><a href="components/{{ value }}.html">{{ value }}</a></li>
-        {% endfor %}
-    </ul>
-    <h3><a href="/svg/sprite/sprite.symbol.html">SVG SPRITES</a></h3>
-{% endblock %}
- 
+<!DOCTYPE html>
+<html lang="es-es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{title}}</title>
+    <meta name="title" content="Pleasure Dev Guide" />
+    <meta name="description" content="Develpment guide">
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <!-- inject:css -->
+        <!-- endinject -->
+
+    </head>
+    <body>
+        <h1>Pleasure DEV guide</h1>
+        <h2>Pages</h4>
+        <ul>
+            <li><a href="/">Index (home)</a>
+            {% for page in pageList %}
+                <li><a href="/{{ page }}">{{ page }}</a></li>
+            {% endfor %}
+        </ul>
+        <h2>NetlifyCMS contents</h4>
+        <ul>
+            {% for content in netlifyContents %}
+                <li><a href="/{{ content.name }}">{{ content.label }}</a></li>
+            {% endfor %}
+        </ul>
+        <h3><a href="/assets/svg/sprite/sprite.symbol.html">SVG SPRITES</a></h3>
+        <!-- inject:vendors:js -->
+        <!-- endinject -->
+        <!-- inject:js -->
+        <!-- endinject -->
+    </body>
+</html>

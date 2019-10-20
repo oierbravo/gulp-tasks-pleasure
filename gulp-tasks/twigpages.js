@@ -134,12 +134,25 @@ md = new MarkdownIt();
         let pageListFiles =  glob.sync(options.twigPages.src);
         pageListFiles.forEach(function(file){
             //Adding entry to the list.
-            pageList.push(path.basename(path.dirname(file)));
+            if(path.basename(path.dirname(file)) !== 'index'){
+                pageList.push(path.basename(path.dirname(file)));
+            }
+            
         });
-        return gulp.src([path.join(__dirname,'/gulp-tasks/libs/dev-guide.twig')],{allowEmpty:true})
+        let netlifyContents = [];
+        _.forEach(options.netlifycms.contentTypes,function(content){
+            netlifyContents.push({name:content.name,label:content.label});
+        })
+        var devGuideFile = path.join(__dirname,'/libs/dev-guide.twig');
+        console.log(devGuideFile);
+        if(!fs.existsSync(devGuideFile)){
+           console.log('DEV_GUIDE not found');
+        }
+        return gulp.src([devGuideFile],{allowEmpty:true})
             .pipe(plugins.data(function(file){
                 return {
-                    pageList:pageList
+                    pageList:pageList,
+                    netlifyContents: netlifyContents
                 }
             }))
             .pipe(plugins.twig(twigConfigs))

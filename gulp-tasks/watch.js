@@ -47,10 +47,12 @@ module.exports = function (gulp, plugins, options) {
   gulp.task('watch:twigPages', function () {
     return gulp.watch(options.twigPages.allSrc,gulp.series('twigPages','browser-sync:reload'));
   });
+  gulp.task('watch:content', function () {
+    return gulp.watch(options.netlifycms.baseSource + '/**/*.json',gulp.series('twigPages','browser-sync:reload'));
+  });
   gulp.task('watch:vendorJsConfig', function () {
     return gulp.watch('./config.vendors.js',gulp.series('js','browser-sync:reload'));
   });
-  
 
-  gulp.task('watch', gulp.parallel('watch:sass', 'watch:js', 'watch:fonts', 'watch:images','watch:twigPages','watch:videos','watch:static','watch:svg'));
+  gulp.task('watch', gulp.parallel('watch:sass','watch:content', 'watch:js', 'watch:fonts', 'watch:images','watch:twigPages','watch:videos','watch:static','watch:svg'));
 };
