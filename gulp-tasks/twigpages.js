@@ -149,6 +149,10 @@ md = new MarkdownIt();
             })
             //Save files.
             //.pipe(plugins.rename('index.html'))
+            .pipe(plugins.rename(function (path) {
+                path.dirname = '';
+                path.basename = 'pleasure';
+            }))
             .pipe(gulp.dest(options.twigPages.destination));
             
         
@@ -287,11 +291,9 @@ md = new MarkdownIt();
         .pipe(plugins.clean())
 
     });
-      gulp.task('twigPages', (options.production) ? 
+    gulp.task('twigPages',gulp.series('netlifycms','twigPages:pages','twigPages:index','twigPages:index:clean','twigPages:dev-guide'));
+     /* gulp.task('twigPages', (options.production) ? 
         gulp.series('netlifycms','twigPages:pages','twigPages:index','twigPages:index:clean') : 
-        gulp.series('twigPages:pages'
-        //,'twigPages:index'
-        ,'twigPages:dev-guide'
-        )
-        );
+        gulp.series('twigPages:pages','twigPages:index','twigPages:dev-guide')
+        );*/
   };
