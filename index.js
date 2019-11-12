@@ -169,7 +169,7 @@ var plugins = require('gulp-load-plugins')({
         },
         // ----- Static Assets ----- //
         static: {
-          files: paths.static.source + '**/*.*',
+          files: paths.static.source + '**/*',
           destination: path.join(paths.baseDestination,paths.static.destination)
         },
         // ----- Images ----- //
