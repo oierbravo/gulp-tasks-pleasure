@@ -6,6 +6,8 @@
   "author": "oierbravo",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
     "babel-core": "^6.26.3",
     "browser-sync": "^2.26.7",
     "del": "^4.1.1",

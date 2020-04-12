@@ -12,6 +12,9 @@ module.exports = function (gulp, plugins, options) {
        
         .pipe(plugins.sourcemaps.write())
         .pipe(plugins.plumber.stop())
+        .pipe(babel({
+          presets: ['@babel/env']
+        }))
         .pipe(options.production ? plugins.uglify({ output: { comments: 'some' } }): plugins.util.noop())
 
         .pipe(plugins.concat('app.js'))
