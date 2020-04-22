@@ -16,6 +16,7 @@ module.exports = function (gulp, plugins, options) {
           plugins: [
             {removeViewBox: true},
             {cleanupIDs: false},
+            {removeHiddenElems: false},
           ]
         })
       ]): plugins.util.noop())
