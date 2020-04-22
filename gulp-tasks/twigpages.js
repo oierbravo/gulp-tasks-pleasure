@@ -57,9 +57,9 @@ module.exports = function (gulp, plugins, options) {
     },
     useFileContents: true,
   };
-  require ('twigpages.pages') (gulp, plugins, options, sources, twigConfigs);
-  require ('twigpages.devguide') (gulp, plugins, options, sources, twigConfigs);
-  require ('twigpages.netlify') (gulp, plugins, options, sources, twigConfigs);
+  require ('./twigpages.pages') (gulp, plugins, options, sources, twigConfigs);
+  require ('./twigpages.devguide') (gulp, plugins, options, sources, twigConfigs);
+  require ('./twigpages.netlify') (gulp, plugins, options, sources, twigConfigs);
 
   gulp.task (
     'twigPages',
