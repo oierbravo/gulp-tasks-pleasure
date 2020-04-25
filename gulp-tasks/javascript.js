@@ -1,31 +1,33 @@
 
 module.exports = function (gulp, plugins, options) {
     'use strict';
-  
+
+    const babel = require('gulp-babel');
+
     gulp.task('js:app', function () {
-  
+
       return gulp.src([
         options.js.files
       ])
+        .pipe(babel({
+          presets: ['env']
+        }))
         .pipe(plugins.plumber({ errorHandler: plugins.notify.onError('Error compilando JS') }))
         .pipe(plugins.sourcemaps.init())
-       
+
         .pipe(plugins.sourcemaps.write())
         .pipe(plugins.plumber.stop())
-        .pipe(babel({
-          presets: ['@babel/env']
-        }))
+
         .pipe(options.production ? plugins.uglify({ output: { comments: 'some' } }): plugins.util.noop())
 
         .pipe(plugins.concat('app.js'))
         .pipe(gulp.dest(options.js.destination))
         .pipe(plugins.notify("Compilación JS terminada"));
-  
+
     });
-  
+
     gulp.task('js:vendors', function () {
       if(options.js.vendorFiles.length === 0){
-  
         plugins.notify("Sin VENDORS JS que compilar.");
         return Promise.resolve('Vendors ignored');
       }
@@ -41,4 +43,5 @@ module.exports = function (gulp, plugins, options) {
     });
 
     gulp.task('js', gulp.parallel('js:app', 'js:vendors'));
+
   };
