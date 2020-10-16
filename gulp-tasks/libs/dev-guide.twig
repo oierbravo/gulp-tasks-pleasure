@@ -22,12 +22,14 @@
                 <li><a href="/{{ page }}">{{ page }}</a></li>
             {% endfor %}
         </ul>
+        {% if netlifyContents | lenght > 0 %}
         <h2>NetlifyCMS contents</h4>
         <ul>
             {% for content in netlifyContents %}
                 <li><a href="/{{ content.name }}">{{ content.label }}</a></li>
             {% endfor %}
         </ul>
+        {% endif %}
         <h3><a href="/assets/svg/sprite/sprite.symbol.html">SVG SPRITES</a></h3>
         <!-- inject:vendors:js -->
         <!-- endinject -->
