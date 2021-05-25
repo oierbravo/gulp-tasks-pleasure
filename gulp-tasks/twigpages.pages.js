@@ -133,14 +133,14 @@ module.exports = function (gulp, plugins, options, sources, twigConfigs) {
   });
   gulp.task ('twigPages:index', function () {
     return gulp
-      .src ([path.join (options.twigPages.destination, '/index/index.html')], {
+      .src ([path.join (options.twigPages.destination, 'index' , 'index.html')], {
         allowEmpty: true,
       })
       .pipe (plugins.copy (options.twigPages.destination, {prefix: 2}));
   });
   gulp.task ('twigPages:index:clean', function () {
     return gulp
-      .src ([path.join (options.twigPages.destination, '/index/index.html')])
+      .src ([path.join (options.twigPages.destination, 'index' , 'index.html')])
       .pipe (plugins.clean ());
   });
 };
