@@ -1,6 +1,6 @@
 {
   "name": "gulp-tasks-pleasure",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Set of gulp tasks for Pleasure static site generator.",
   "main": "index.js",
   "author": "oierbravo",

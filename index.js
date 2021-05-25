@@ -1,45 +1,46 @@
-var path = require('path');
-var fs = require('fs');
+module.exports = function(gulp) {
 
-var util = require('gulp-util');
-var _ = require('lodash');
+  var path = require('path');
+  var fs = require('fs');
 
-module.exports = function (gulp) {
-    'use strict';
-// Setting pattern this way allows non gulp- plugins to be loaded as well.
-var plugins = require('gulp-load-plugins')({
-    pattern: '*',
-    rename: {
-      'node-sass-import-once': 'importOnce',
-      'gulp-sass-glob': 'sassGlob',
-      'run-sequence': 'runSequence',
-      'gulp-clean-css': 'cleanCSS',
-      'gulp-stylelint': 'gulpStylelint',
-      'gulp-eslint': 'gulpEslint',
-      'gulp-babel': 'babel',
-      'gulp-util': 'gutil',
-      'gulp-notify': 'notify',
-      'gulp-concat': 'concat',
-      'gulp-uglify': 'uglify',
-      'gulp-imagemin': 'imagemin',
-      'gulp-twig' : 'twig',
-      'gulp-data' : 'data',
-      'glob': 'glob',
-      'flatten': 'gulp-flatten',
-      'gulp-svg-sprite': 'svgsprite',
-      'gulp-util':'util',
-      'gulp-inject': 'inject',
-      'gulp-front-matter':'frontmatter',
-      'gulp-htmlmin':'htmlmin',
-      'gulp-postcss':'postcss',
-      'gulp-copy': 'copy',
-      'gulp-clean':'clean',
-      'gulp-rename': 'rename',
-      'gulp-inject-file': 'injectFile'
-        }
-    });
+  var util = require('gulp-util');
+  var _ = require('lodash');
 
-    //Default paths.
+      'use strict';
+  // Setting pattern this way allows non gulp- plugins to be loaded as well.
+  var plugins = require('gulp-load-plugins')({
+      pattern: '*',
+      rename: {
+        'node-sass-import-once': 'importOnce',
+        'gulp-sass-glob': 'sassGlob',
+        'run-sequence': 'runSequence',
+        'gulp-clean-css': 'cleanCSS',
+        'gulp-stylelint': 'gulpStylelint',
+        'gulp-eslint': 'gulpEslint',
+        'gulp-babel': 'babel',
+        'gulp-util': 'gutil',
+        'gulp-notify': 'notify',
+        'gulp-concat': 'concat',
+        'gulp-uglify': 'uglify',
+        'gulp-imagemin': 'imagemin',
+        'gulp-twig' : 'twig',
+        'gulp-data' : 'data',
+        'glob': 'glob',
+        'flatten': 'gulp-flatten',
+        'gulp-svg-sprite': 'svgsprite',
+        'gulp-util':'util',
+        'gulp-inject': 'inject',
+        'gulp-front-matter':'frontmatter',
+        'gulp-htmlmin':'htmlmin',
+        'gulp-postcss':'postcss',
+        'gulp-copy': 'copy',
+        'gulp-clean':'clean',
+        'gulp-rename': 'rename',
+        'gulp-inject-file': 'injectFile'
+          }
+      });
+
+      //Default paths.
     var paths = {
       baseSrc: '',
       baseDestination: !!util.env.production ? 'build' : 'build-dev',
@@ -206,30 +207,6 @@ var plugins = require('gulp-load-plugins')({
         }
     }
 
-    if(fs.existsSync('./src/static/admin/config.yml')){
-      var netlifyCMSConfigData = require('yaml-reader').read('./src/static/admin/config.yml');
-      _.forEach(netlifyCMSConfigData.collections,function(content,index){
-        var contentType = {
-          name: content.name.toLowerCase(),
-          label: content.label,
-          markdownFields:[]
-        }
-        content.fields.map(function(field){
-            if(field.widget === 'markdown'){
-              contentType.markdownFields.push(field.name);
-            }
-        });
-        var itemTwig = path.join(options.twigPages.baseSrc,contentType.name + '/item.twig');
-        if(fs.existsSync(itemTwig)){
-          contentType.itemTemplateSrc = itemTwig;
-        }
-        var listTwig = path.join(options.twigPages.baseSrc,contentType.name + '/list.twig');
-        if(fs.existsSync(listTwig)){
-          contentType.listTemplateSrc = listTwig;
-        }
-        options.netlifycms.contentTypes.push(contentType);
-      });
-    }
     //Asignamos las opciones custom.
     //Object.assign(options,customOptions );
 
@@ -253,4 +230,4 @@ var plugins = require('gulp-load-plugins')({
     require('./gulp-tasks/watch')(gulp, plugins, options);
     require('./gulp-tasks/serve')(gulp, plugins, options);
     require('./gulp-tasks/default')(gulp, plugins, options);
-  };
+}
